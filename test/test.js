@@ -13,7 +13,7 @@ describe('/login', () => {
   beforeAll(() => {
     passportStub.install(app);
     passportStub.login({ username: 'testuser' });
-  });
+   });
 
   afterAll(() => {
     passportStub.logout();
@@ -78,7 +78,7 @@ describe('/schedules', () => {
             .expect(/テスト候補2/)
             .expect(/テスト候補3/)
             .expect(200)
-            .end((err, res) => { deleteScheduleAggregate(createdSchedulePath.split('/schedules/')[1], done, err); });
+            .end((err, res) => { deleteScheduleAggregate(createdSchedulePath.split('/schedules/')[1], done, err);});
         });
     });
   });
@@ -138,14 +138,14 @@ describe('/schedules/:scheduleId/users/:userId/comments', () => {
     passportStub.uninstall(app);
   });
 
-  test('コメントが更新できる', done => {
+  test('コメントが更新できる', (done) => {
     User.upsert({ userId: 0, username: 'testuser' }).then(() => {
       request(app)
         .post('/schedules')
-        .send({
-          scheduleName: 'テストコメント更新予定1',
-          memo: 'テストコメント更新メモ1',
-          candidates: 'テストコメント更新候補1'
+        .send({ 
+          scheduleName: 'テストコメント更新予定1', 
+          memo: 'テストコメント更新メモ1', 
+          candidates: 'テストコメント更新候補1' 
         })
         .end((err, res) => {
           const createdSchedulePath = res.headers.location;
@@ -159,7 +159,7 @@ describe('/schedules/:scheduleId/users/:userId/comments', () => {
             .end((err, res) => {
               Comment.findAll({
                 where: { scheduleId: scheduleId }
-              }).then(comments => {
+              }).then((comments) => {
                 assert.strictEqual(comments.length, 1);
                 assert.strictEqual(comments[0].comment, 'testcomment');
                 deleteScheduleAggregate(scheduleId, done, err);
@@ -173,27 +173,42 @@ describe('/schedules/:scheduleId/users/:userId/comments', () => {
 function deleteScheduleAggregate(scheduleId, done, err) {
   const promiseCommentDestroy = Comment.findAll({
     where: { scheduleId: scheduleId }
-  }).then((comments) => {
-    return Promise.all(comments.map((c) => { return c.destroy(); }));
+  }).then(comments => {
+    return Promise.all(
+      comments.map(c => {
+        return c.destroy();
+      })
+    );
   });
 
   Availability.findAll({
     where: { scheduleId: scheduleId }
-  }).then((availabilities) => {
-    const promises = availabilities.map((a) => { return a.destroy(); });
-    return Promise.all(promises);
-  }).then(() => {
-    return Candidate.findAll({
-      where: { scheduleId: scheduleId }
+  })
+    .then(availabilities => {
+      const promises = availabilities.map(a => {
+        return a.destroy();
+      });
+      return Promise.all(promises);
+    })
+    .then(() => {
+      return Candidate.findAll({
+        where: { scheduleId: scheduleId }
+      });
+    })
+    .then(candidates => {
+      const promises = candidates.map(c => {
+        return c.destroy();
+      });
+      promises.push(promiseCommentDestroy);
+      return Promise.all(promises);
+    })
+    .then(() => {
+      return Schedule.findByPk(scheduleId).then(s => {
+        return s.destroy();
+      });
+    })
+    .then(() => {
+      if (err) return done(err);
+      done();
     });
-  }).then((candidates) => {
-    const promises = candidates.map((c) => { return c.destroy(); });
-    promises.push(promiseCommentDestroy);
-    return Promise.all(promises);
-  }).then(() => {
-    return Schedule.findByPk(scheduleId).then((s) => { return s.destroy(); });
-  }).then(() => {
-    if (err) return done(err);
-    done();
-  });
 }
