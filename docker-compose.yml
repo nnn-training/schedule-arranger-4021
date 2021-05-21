@@ -21,5 +21,4 @@ services:
         - schedule-arranger-data:/var/lib/postgresql/data
   volumes:
     schedule-arranger-data:
-      external: true
-      
+      external: true 
