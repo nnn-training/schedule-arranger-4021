@@ -12,12 +12,11 @@ $('.availability-toggle-button').each((i, e) => {
     $.post(
       `/schedules/${scheduleId}/users/${userId}/candidates/${candidateId}`,
       { availability: nextAvailability },
-      data => {
+      (data) => {
         button.data('availability', data.availability);
         const availabilityLabels = ['欠', '？', '出'];
         button.text(availabilityLabels[data.availability]);
-      }
-    );
+      });
   });
 });
 
