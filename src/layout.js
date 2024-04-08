@@ -7,10 +7,10 @@ function layout(title, body) {
       <head>
         <title>${title}</title>
         <link rel="stylesheet" href="/stylesheets/style.css" />
-        <script src="/javascripts/bundle.js"></script>
       </head>
       <body>
         ${body}
+        <script src="/javascripts/bundle.js"></script>
       </body>
     </html>
   `;

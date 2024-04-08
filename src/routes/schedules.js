@@ -138,15 +138,14 @@ app.get("/:scheduleId", async (c) => {
     });
   });
 
-      // コメント取得
-      const comments = await prisma.comment.findMany({
-        where: { scheduleId: schedule.scheduleId }
-      });
-      const commentMap = new Map();  // key: userId, value: comment
-      comments.forEach((comment) => {
-        commentMap.set(comment.userId, comment.comment);
-        });
-  
+  // コメント取得
+  const comments = await prisma.comment.findMany({
+    where: { scheduleId: schedule.scheduleId },
+  });
+  const commentMap = new Map(); // key: userId, value: comment
+  comments.forEach((comment) => {
+    commentMap.set(comment.userId, comment.comment);
+  });
 
   return c.html(
     layout(
@@ -174,12 +173,11 @@ app.get("/:scheduleId", async (c) => {
                   return html`
                     <td>
                       ${user.isSelf
-                        ? html`
-                          <button
-                            data-schedule-id${schedule.scheduleId}
-                            data-user-id=${user.userId}
-                            data-candidate-id=${candidate.candidateId}
-                            data-availability=${availability}
+                        ? html` <button
+                            data-schedule-id="${schedule.scheduleId}"
+                            data-user-id="${user.userId}"
+                            data-candidate-id="${candidate.candidateId}"
+                            data-availability="${availability}"
                             class="availability-toggle-button"
                           >
                             ${label}
@@ -197,11 +195,22 @@ app.get("/:scheduleId", async (c) => {
               const comment = commentMap.get(user.userId);
               return html`
                 <td>
-                  <p>${comment}</p>
-                  ${user.isSelf ? html`<button">編集</button>` : ""}
+                  <p id="${user.isSelf ? "self-comment" : ""}">${comment}</p>
+                  ${user.isSelf
+                    ? html`
+                        <button
+                          data-schedule-id="${schedule.scheduleId}"
+                          data-user-id="${user.userId}"
+                          id="self-comment-button"
+                        >
+                          編集
+                        </button>
+                      `
+                    : ""}
                 </td>
               `;
             })}
+          </tr>
         </table>
       `,
     ),

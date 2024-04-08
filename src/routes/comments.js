@@ -9,7 +9,7 @@ app.use(ensureAuthenticated());
 app.post("/:scheduleId/users/:userId/comments", async (c) => {
   const scheduleId = c.req.param("scheduleId");
   const userId = parseInt(c.req.param("userId"), 10);
-  const body = await c.req.parseBody();
+  const body = await c.req.json();
   const comment = body.comment.slice(0, 255);
 
   const data = {

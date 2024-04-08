@@ -151,12 +151,9 @@ describe("/schedules/:scheduleId/users/:userId/candidates/:candidateId", () => {
       `/schedules/${scheduleId}/users/${testUser.userId}/candidates/${candidate.candidateId}`,
       {
         method: "POST",
-        body: new URLSearchParams({
+        body: JSON.stringify({
           availability: 2,
         }),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
       },
     );
 
@@ -209,12 +206,9 @@ describe("/schedules/:scheduleId/users/:userId/comments", () => {
       `/schedules/${scheduleId}/users/${testUser.userId}/comments`,
       {
         method: "POST",
-        body: new URLSearchParams({
+        body: JSON.stringify({
           comment: "testcomment",
         }),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
       },
     );
 

@@ -19,7 +19,7 @@ const loginRouter = require("./routes/login");
 const logoutRouter = require("./routes/logout");
 const scheduleRouter = require("./routes/schedules");
 const availabilitiesRouter = require("./routes/availabilities");
-const commentsRouter = require('./routes/comments');
+const commentsRouter = require("./routes/comments");
 
 const app = new Hono();
 
