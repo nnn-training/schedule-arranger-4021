@@ -24,6 +24,28 @@ async function deleteScheduleAggregate(scheduleId) {
   await prisma.schedule.delete({ where: { scheduleId } });
 }
 
+// フォームからリクエストを送信する
+async function sendFormRequest(app, path, body) {
+  return app.request(path, {
+    method: "POST",
+    body: new URLSearchParams(body),
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
+}
+
+// JSON を含んだリクエストを送信する
+async function sendJsonRequest(app, path, body) {
+  return app.request(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 describe("/login", () => {
   beforeAll(() => {
     mockIronSession();
@@ -66,7 +88,7 @@ describe("/schedules", () => {
 
   afterAll(async () => {
     jest.restoreAllMocks();
-    deleteScheduleAggregate(scheduleId);
+    await deleteScheduleAggregate(scheduleId);
   });
 
   test("予定が作成でき、表示される", async () => {
@@ -78,16 +100,10 @@ describe("/schedules", () => {
 
     const app = require("./app");
 
-    const postRes = await app.request("/schedules", {
-      method: "POST",
-      body: new URLSearchParams({
-        scheduleName: "テスト予定1",
-        memo: "テストメモ1\r\nテストメモ2",
-        candidates: "テスト候補1\r\nテスト候補2\r\nテスト候補3",
-      }),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+    const postRes = await sendFormRequest(app, "/schedules", {
+      scheduleName: "テスト予定1",
+      memo: "テストメモ1\r\nテストメモ2",
+      candidates: "テスト候補1\r\nテスト候補2\r\nテスト候補3",
     });
 
     expect(postRes.headers.get("Location")).toMatch(/schedules/);
@@ -128,16 +144,10 @@ describe("/schedules/:scheduleId/users/:userId/candidates/:candidateId", () => {
 
     const app = require("./app");
 
-    const postRes = await app.request("/schedules", {
-      method: "POST",
-      body: new URLSearchParams({
-        scheduleName: "テスト出欠更新予定1",
-        memo: "テスト出欠更新メモ1",
-        candidates: "テスト出欠更新候補1",
-      }),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+    const postRes = await sendFormRequest(app, "/schedules", {
+      scheduleName: "テスト出欠更新予定1",
+      memo: "テスト出欠更新メモ1",
+      candidates: "テスト出欠更新候補1",
     });
 
     const createdSchedulePath = postRes.headers.get("Location");
@@ -147,13 +157,11 @@ describe("/schedules/:scheduleId/users/:userId/candidates/:candidateId", () => {
       where: { scheduleId },
     });
 
-    const res = await app.request(
+    const res = await sendJsonRequest(
+      app, 
       `/schedules/${scheduleId}/users/${testUser.userId}/candidates/${candidate.candidateId}`,
       {
-        method: "POST",
-        body: JSON.stringify({
-          availability: 2,
-        }),
+        availability: 2,
       },
     );
 
@@ -187,28 +195,20 @@ describe("/schedules/:scheduleId/users/:userId/comments", () => {
 
     const app = require("./app");
 
-    const postRes = await app.request("/schedules", {
-      method: "POST",
-      body: new URLSearchParams({
-        scheduleName: "テストコメント更新予定1",
-        memo: "テストコメント更新メモ1",
-        candidates: "テストコメント更新候補1",
-      }),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+    const postRes = await sendFormRequest(app, "/schedules", {
+      scheduleName: "テストコメント更新予定1",
+      memo: "テストコメント更新メモ1",
+      candidates: "テストコメント更新候補1",
     });
 
     const createdSchedulePath = postRes.headers.get("Location");
     scheduleId = createdSchedulePath.split("/schedules/")[1];
 
-    const res = await app.request(
+    const res = await sendJsonRequest(
+      app, 
       `/schedules/${scheduleId}/users/${testUser.userId}/comments`,
       {
-        method: "POST",
-        body: JSON.stringify({
-          comment: "testcomment",
-        }),
+        comment: "testcomment",
       },
     );
 

@@ -1,6 +1,6 @@
 const { html } = require("hono/html");
 
-function layout(title, body) {
+function layout(c, title, body) {
   return html`
     <!doctype html>
     <html>
@@ -10,7 +10,6 @@ function layout(title, body) {
       </head>
       <body>
         ${body}
-        <script src="/javascripts/bundle.js"></script>
       </body>
     </html>
   `;
