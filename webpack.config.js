@@ -1,10 +1,10 @@
 module.exports = {
-  context: __dirname + '/app',
-  mode: 'none',
-  entry: './entry',
+  context: __dirname + "/src/app",
+  mode: "none",
+  entry: "./entry",
   output: {
-    path: __dirname + '/public/javascripts',
-    filename: 'bundle.js'
+    path: __dirname + "/public/javascripts",
+    filename: "bundle.js",
   },
   module: {
     rules: [
@@ -12,12 +12,12 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env']
-          }
-        }
-      }
-    ]
-  }
+            presets: ["@babel/preset-env"],
+          },
+        },
+      },
+    ],
+  },
 };
