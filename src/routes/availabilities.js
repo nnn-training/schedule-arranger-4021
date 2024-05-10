@@ -22,6 +22,7 @@ app.post(
       candidateId,
       availability,
     };
+
     await prisma.availability.upsert({
       where: {
         availabilityCompositeId: {
