@@ -19,6 +19,7 @@ app.post(
       scheduleId,
       comment,
     };
+
     await prisma.comment.upsert({
       where: {
         commentCompositeId: {
