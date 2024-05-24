@@ -172,7 +172,7 @@ app.get("/:scheduleId", ensureAuthenticated(), async (c) => {
                   return html`
                     <td>
                       ${user.isSelf
-                        ? html` <button
+                        ? html`<button
                             data-schedule-id="${schedule.scheduleId}"
                             data-user-id="${user.userId}"
                             data-candidate-id="${candidate.candidateId}"
