@@ -112,14 +112,14 @@ app.get("/:scheduleId", ensureAuthenticated(), async (c) => {
 
   // 閲覧ユーザと出欠に紐づくユーザからユーザ Map を作る
   const userMap = new Map(); // key: userId, value: User
-  userMap.set(parseInt(user.id), {
+  userMap.set(parseInt(user.id, 10), {
     isSelf: true,
-    userId: parseInt(user.id),
+    userId: parseInt(user.id, 10),
     username: user.username,
   });
   availabilities.forEach((a) => {
     userMap.set(a.user.userId, {
-      isSelf: parseInt(user.id) === a.user.userId, // 閲覧ユーザ自身であるかを示す真偽値
+      isSelf: parseInt(user.id, 10) === a.user.userId, // 閲覧ユーザ自身であるかを示す真偽値
       userId: a.user.userId,
       username: a.user.username,
     });
