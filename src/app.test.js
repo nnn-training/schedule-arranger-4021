@@ -205,7 +205,7 @@ describe("/schedules/:scheduleId/users/:userId/comments", () => {
     scheduleId = createdSchedulePath.split("/schedules/")[1];
 
     const res = await sendJsonRequest(
-      app, 
+      app,
       `/schedules/${scheduleId}/users/${testUser.userId}/comments`,
       {
         comment: "testcomment",
