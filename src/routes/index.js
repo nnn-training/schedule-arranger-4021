@@ -33,9 +33,9 @@ app.get("/", async (c) => {
   const { user } = c.get("session") ?? {};
   const schedules = user
     ? await prisma.schedule.findMany({
-        where: { createdBy: user.id },
-        orderBy: { updatedAt: "desc" },
-      })
+      where: { createdBy: user.id },
+      orderBy: { updatedAt: "desc" },
+    })
     : [];
 
   return c.html(

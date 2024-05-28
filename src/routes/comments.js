@@ -6,7 +6,7 @@ const ensureAuthenticated = require("../middlewares/ensure-authenticated");
 const app = new Hono();
 
 app.post(
-  "/:scheduleId/users/:userId/comments", 
+  "/:scheduleId/users/:userId/comments",
   ensureAuthenticated(),
   async (c) => {
     const scheduleId = c.req.param("scheduleId");
