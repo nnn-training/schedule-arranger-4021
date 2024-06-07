@@ -106,10 +106,10 @@ describe("/schedules", () => {
       candidates: "テスト候補1\r\nテスト候補2\r\nテスト候補3",
     });
 
-    expect(postRes.headers.get("Location")).toMatch(/schedules/);
+    const createdSchedulePath = postRes.headers.get("Location");
+    expect(createdSchedulePath).toMatch(/schedules/);
     expect(postRes.status).toBe(302);
 
-    const createdSchedulePath = postRes.headers.get("Location");
     scheduleId = createdSchedulePath.split("/schedules/")[1];
 
     const res = await app.request(createdSchedulePath);
