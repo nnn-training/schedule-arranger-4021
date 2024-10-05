@@ -1,16 +1,16 @@
-const { Hono } = require("hono");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient({ log: ["query"] });
-const ensureAuthenticated = require("../middlewares/ensure-authenticated");
+const { Hono } = require('hono');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient({ log: ['query'] });
+const ensureAuthenticated = require('../middlewares/ensure-authenticated');
 
 const app = new Hono();
 
 app.post(
-  "/:scheduleId/users/:userId/comments",
+  '/:scheduleId/users/:userId/comments',
   ensureAuthenticated(),
   async (c) => {
-    const scheduleId = c.req.param("scheduleId");
-    const userId = parseInt(c.req.param("userId"), 10);
+    const scheduleId = c.req.param('scheduleId');
+    const userId = parseInt(c.req.param('userId'), 10);
     const body = await c.req.json();
     const comment = body.comment.slice(0, 255);
 
@@ -31,7 +31,7 @@ app.post(
       create: data,
     });
 
-    return c.json({ status: "OK", comment });
+    return c.json({ status: 'OK', comment });
   },
 );
 

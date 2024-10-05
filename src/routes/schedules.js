@@ -1,18 +1,18 @@
-const { Hono } = require("hono");
-const { html } = require("hono/html");
-const layout = require("../layout");
-const ensureAuthenticated = require("../middlewares/ensure-authenticated");
-const { randomUUID } = require("node:crypto");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient({ log: ["query"] });
+const { Hono } = require('hono');
+const { html } = require('hono/html');
+const layout = require('../layout');
+const ensureAuthenticated = require('../middlewares/ensure-authenticated');
+const { randomUUID } = require('node:crypto');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient({ log: ['query'] });
 
 const app = new Hono();
 
-app.get("/new", ensureAuthenticated(), (c) => {
+app.get('/new', ensureAuthenticated(), (c) => {
   return c.html(
     layout(
       c,
-      "予定の作成",
+      '予定の作成',
       html`
         <form method="post" action="/schedules">
           <div>
@@ -34,15 +34,15 @@ app.get("/new", ensureAuthenticated(), (c) => {
   );
 });
 
-app.post("/", ensureAuthenticated(), async (c) => {
-  const { user } = c.get("session") ?? {};
+app.post('/', ensureAuthenticated(), async (c) => {
+  const { user } = c.get('session') ?? {};
   const body = await c.req.parseBody();
 
   // 予定を登録
   const schedule = await prisma.schedule.create({
     data: {
       scheduleId: randomUUID(),
-      scheduleName: body.scheduleName.slice(0, 255) || "（名称未設定）",
+      scheduleName: body.scheduleName.slice(0, 255) || '（名称未設定）',
       memo: body.memo,
       createdBy: user.id,
       updatedAt: new Date(),
@@ -51,9 +51,9 @@ app.post("/", ensureAuthenticated(), async (c) => {
 
   // 候補日程を登録
   const candidateNames = body.candidates
-    .split("\n")
+    .split('\n')
     .map((s) => s.trim())
-    .filter((s) => s !== "");
+    .filter((s) => s !== '');
   const candidates = candidateNames.map((candidateName) => ({
     candidateName,
     scheduleId: schedule.scheduleId,
@@ -63,13 +63,13 @@ app.post("/", ensureAuthenticated(), async (c) => {
   });
 
   // 作成した予定のページにリダイレクト
-  return c.redirect("/schedules/" + schedule.scheduleId);
+  return c.redirect('/schedules/' + schedule.scheduleId);
 });
 
-app.get("/:scheduleId", ensureAuthenticated(), async (c) => {
-  const { user } = c.get("session") ?? {};
+app.get('/:scheduleId', ensureAuthenticated(), async (c) => {
+  const { user } = c.get('session') ?? {};
   const schedule = await prisma.schedule.findUnique({
-    where: { scheduleId: c.req.param("scheduleId") },
+    where: { scheduleId: c.req.param('scheduleId') },
     include: {
       user: {
         select: {
@@ -86,13 +86,13 @@ app.get("/:scheduleId", ensureAuthenticated(), async (c) => {
 
   const candidates = await prisma.candidate.findMany({
     where: { scheduleId: schedule.scheduleId },
-    orderBy: { candidateId: "asc" },
+    orderBy: { candidateId: 'asc' },
   });
 
   // データベースからその予定の全ての出欠を取得する
   const availabilities = await prisma.availability.findMany({
     where: { scheduleId: schedule.scheduleId },
-    orderBy: { candidateId: "asc" },
+    orderBy: { candidateId: 'asc' },
     include: {
       user: {
         select: {
@@ -167,7 +167,7 @@ app.get("/:scheduleId", ensureAuthenticated(), async (c) => {
                   const availability = availabilityMapMap
                     .get(user.userId)
                     .get(candidate.candidateId);
-                  const availabilityLabels = ["欠", "？", "出"];
+                  const availabilityLabels = ['欠', '？', '出'];
                   const label = availabilityLabels[availability];
                   return html`
                     <td>
@@ -205,7 +205,7 @@ app.get("/:scheduleId", ensureAuthenticated(), async (c) => {
                           編集
                         </button>
                       `
-                    : ""}
+                    : ''}
                 </td>
               `;
             })}
