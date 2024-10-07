@@ -1,15 +1,15 @@
-"use strict";
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient({ log: ["query"] });
+'use strict';
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient({ log: ['query'] });
 
 const testUser = {
   userId: 0,
-  username: "testuser",
+  username: 'testuser',
 };
 
 function mockIronSession() {
-  const ironSession = require("iron-session");
-  jest.spyOn(ironSession, "getIronSession").mockReturnValue({
+  const ironSession = require('iron-session');
+  jest.spyOn(ironSession, 'getIronSession').mockReturnValue({
     user: { login: testUser.username, id: testUser.userId },
     save: jest.fn(),
     destroy: jest.fn(),
@@ -27,10 +27,10 @@ async function deleteScheduleAggregate(scheduleId) {
 // フォームからリクエストを送信する
 async function sendFormRequest(app, path, body) {
   return app.request(path, {
-    method: "POST",
+    method: 'POST',
     body: new URLSearchParams(body),
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
   });
 }
@@ -38,15 +38,15 @@ async function sendFormRequest(app, path, body) {
 // JSON を含んだリクエストを送信する
 async function sendJsonRequest(app, path, body) {
   return app.request(path, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(body),
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 }
 
-describe("/login", () => {
+describe('/login', () => {
   beforeAll(() => {
     mockIronSession();
   });
@@ -55,33 +55,33 @@ describe("/login", () => {
     jest.restoreAllMocks();
   });
 
-  test("ログインのためのリンクが含まれる", async () => {
-    const app = require("./app");
-    const res = await app.request("/login");
-    expect(res.headers.get("Content-Type")).toBe("text/html; charset=UTF-8");
-    expect(await res.text()).toMatch(/<a href="\/auth\/github"/);
+  test('ログインのためのリンクが含まれる', async () => {
+    const app = require('./app');
+    const res = await app.request('/login');
+    expect(res.headers.get('Content-Type')).toBe('text/html; charset=UTF-8');
+    expect(await res.text()).toMatch(/<a href='\/auth\/github'/);
     expect(res.status).toBe(200);
   });
 
-  test("ログイン時はユーザ名が表示される", async () => {
-    const app = require("./app");
-    const res = await app.request("/login");
+  test('ログイン時はユーザ名が表示される', async () => {
+    const app = require('./app');
+    const res = await app.request('/login');
     expect(await res.text()).toMatch(/testuser/);
     expect(res.status).toBe(200);
   });
 });
 
-describe("/logout", () => {
-  test("/ にリダイレクトされる", async () => {
-    const app = require("./app");
-    const res = await app.request("/logout");
-    expect(res.headers.get("Location")).toBe("/");
+describe('/logout', () => {
+  test('/ にリダイレクトされる', async () => {
+    const app = require('./app');
+    const res = await app.request('/logout');
+    expect(res.headers.get('Location')).toBe('/');
     expect(res.status).toBe(302);
   });
 });
 
-describe("/schedules", () => {
-  let scheduleId = "";
+describe('/schedules', () => {
+  let scheduleId = '';
   beforeAll(() => {
     mockIronSession();
   });
@@ -91,26 +91,26 @@ describe("/schedules", () => {
     await deleteScheduleAggregate(scheduleId);
   });
 
-  test("予定が作成でき、表示される", async () => {
+  test('予定が作成でき、表示される', async () => {
     await prisma.user.upsert({
       where: { userId: testUser.userId },
       create: testUser,
       update: testUser,
     });
 
-    const app = require("./app");
+    const app = require('./app');
 
-    const postRes = await sendFormRequest(app, "/schedules", {
-      scheduleName: "テスト予定1",
-      memo: "テストメモ1\r\nテストメモ2",
-      candidates: "テスト候補1\r\nテスト候補2\r\nテスト候補3",
+    const postRes = await sendFormRequest(app, '/schedules', {
+      scheduleName: 'テスト予定1',
+      memo: 'テストメモ1\r\nテストメモ2',
+      candidates: 'テスト候補1\r\nテスト候補2\r\nテスト候補3',
     });
 
-    const createdSchedulePath = postRes.headers.get("Location");
+    const createdSchedulePath = postRes.headers.get('Location');
     expect(createdSchedulePath).toMatch(/schedules/);
     expect(postRes.status).toBe(302);
 
-    scheduleId = createdSchedulePath.split("/schedules/")[1];
+    scheduleId = createdSchedulePath.split('/schedules/')[1];
 
     const res = await app.request(createdSchedulePath);
     const body = await res.text();
@@ -124,8 +124,8 @@ describe("/schedules", () => {
   });
 });
 
-describe("/schedules/:scheduleId/users/:userId/candidates/:candidateId", () => {
-  let scheduleId = "";
+describe('/schedules/:scheduleId/users/:userId/candidates/:candidateId', () => {
+  let scheduleId = '';
   beforeAll(() => {
     mockIronSession();
   });
@@ -135,23 +135,23 @@ describe("/schedules/:scheduleId/users/:userId/candidates/:candidateId", () => {
     await deleteScheduleAggregate(scheduleId);
   });
 
-  test("出欠が更新できる", async () => {
+  test('出欠が更新できる', async () => {
     await prisma.user.upsert({
       where: { userId: testUser.userId },
       create: testUser,
       update: testUser,
     });
 
-    const app = require("./app");
+    const app = require('./app');
 
-    const postRes = await sendFormRequest(app, "/schedules", {
-      scheduleName: "テスト出欠更新予定1",
-      memo: "テスト出欠更新メモ1",
-      candidates: "テスト出欠更新候補1",
+    const postRes = await sendFormRequest(app, '/schedules', {
+      scheduleName: 'テスト出欠更新予定1',
+      memo: 'テスト出欠更新メモ1',
+      candidates: 'テスト出欠更新候補1',
     });
 
-    const createdSchedulePath = postRes.headers.get("Location");
-    scheduleId = createdSchedulePath.split("/schedules/")[1];
+    const createdSchedulePath = postRes.headers.get('Location');
+    scheduleId = createdSchedulePath.split('/schedules/')[1];
 
     const candidate = await prisma.candidate.findFirst({
       where: { scheduleId },
@@ -165,7 +165,7 @@ describe("/schedules/:scheduleId/users/:userId/candidates/:candidateId", () => {
       },
     );
 
-    expect(await res.json()).toEqual({ status: "OK", availability: 2 });
+    expect(await res.json()).toEqual({ status: 'OK', availability: 2 });
 
     const availabilities = await prisma.availability.findMany({
       where: { scheduleId },
@@ -175,8 +175,8 @@ describe("/schedules/:scheduleId/users/:userId/candidates/:candidateId", () => {
   });
 });
 
-describe("/schedules/:scheduleId/users/:userId/comments", () => {
-  let scheduleId = "";
+describe('/schedules/:scheduleId/users/:userId/comments', () => {
+  let scheduleId = '';
   beforeAll(() => {
     mockIronSession();
   });
@@ -186,36 +186,36 @@ describe("/schedules/:scheduleId/users/:userId/comments", () => {
     await deleteScheduleAggregate(scheduleId);
   });
 
-  test("コメントが更新できる", async () => {
+  test('コメントが更新できる', async () => {
     await prisma.user.upsert({
       where: { userId: testUser.userId },
       create: testUser,
       update: testUser,
     });
 
-    const app = require("./app");
+    const app = require('./app');
 
-    const postRes = await sendFormRequest(app, "/schedules", {
-      scheduleName: "テストコメント更新予定1",
-      memo: "テストコメント更新メモ1",
-      candidates: "テストコメント更新候補1",
+    const postRes = await sendFormRequest(app, '/schedules', {
+      scheduleName: 'テストコメント更新予定1',
+      memo: 'テストコメント更新メモ1',
+      candidates: 'テストコメント更新候補1',
     });
 
-    const createdSchedulePath = postRes.headers.get("Location");
-    scheduleId = createdSchedulePath.split("/schedules/")[1];
+    const createdSchedulePath = postRes.headers.get('Location');
+    scheduleId = createdSchedulePath.split('/schedules/')[1];
 
     const res = await sendJsonRequest(
       app,
       `/schedules/${scheduleId}/users/${testUser.userId}/comments`,
       {
-        comment: "testcomment",
+        comment: 'testcomment',
       },
     );
 
-    expect(await res.json()).toEqual({ status: "OK", comment: "testcomment" });
+    expect(await res.json()).toEqual({ status: 'OK', comment: 'testcomment' });
 
     const comments = await prisma.comment.findMany({ where: { scheduleId } });
     expect(comments.length).toBe(1);
-    expect(comments[0].comment).toBe("testcomment");
+    expect(comments[0].comment).toBe('testcomment');
   });
 });
