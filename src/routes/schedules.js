@@ -41,7 +41,7 @@ app.post('/', async (c) => {
   const body = await c.req.parseBody();
 
   // 予定を登録
-  const schedule = await prisma.schedule.create({
+  const { scheduleId } = await prisma.schedule.create({
     data: {
       scheduleId: randomUUID(),
       scheduleName: body.scheduleName.slice(0, 255) || '（名称未設定）',
@@ -58,14 +58,14 @@ app.post('/', async (c) => {
     .filter((s) => s !== '');
   const candidates = candidateNames.map((candidateName) => ({
     candidateName,
-    scheduleId: schedule.scheduleId,
+    scheduleId,
   }));
   await prisma.candidate.createMany({
     data: candidates,
   });
 
   // 作成した予定のページにリダイレクト
-  return c.redirect('/schedules/' + schedule.scheduleId);
+  return c.redirect('/schedules/' + scheduleId);
 });
 
 app.get('/:scheduleId', async (c) => {
@@ -104,39 +104,23 @@ app.get('/:scheduleId', async (c) => {
       },
     },
   });
-  // 出欠 MapMap を作成する
-  const availabilityMapMap = new Map(); // key: userId, value: Map(key: candidateId, value: availability)
+
+  // 各候補日程に対する各ユーザの出欠を入れ子の Map にして格納するための Map を作る。
+  // key: candidateId, value: Map (key: userId, value: availability)
+  const availabilityMapMap = new Map(candidates.map((c) => [c.candidateId, new Map()]));
+
+  // 閲覧ユーザと、出欠を登録したユーザ情報を格納するための Map を作る。
+  const userMap = new Map(); // key: userId, value: { userId, username }
+  const viewerUserId = user.id;
+  userMap.set(viewerUserId, { userId: viewerUserId, username: user.login });
+
   availabilities.forEach((a) => {
-    const map = availabilityMapMap.get(a.user.userId) || new Map();
-    map.set(a.candidateId, a.availability);
-    availabilityMapMap.set(a.user.userId, map);
+    availabilityMapMap.get(a.candidateId)?.set(a.user.userId, a.availability);
+    userMap.set(a.user.userId, a.user);
   });
 
-  // 閲覧ユーザと出欠に紐づくユーザからユーザ Map を作る
-  const userMap = new Map(); // key: userId, value: User
-  userMap.set(parseInt(user.id, 10), {
-    isSelf: true,
-    userId: parseInt(user.id, 10),
-    username: user.login,
-  });
-  availabilities.forEach((a) => {
-    userMap.set(a.user.userId, {
-      isSelf: parseInt(user.id, 10) === a.user.userId, // 閲覧ユーザ自身であるかを示す真偽値
-      userId: a.user.userId,
-      username: a.user.username,
-    });
-  });
-
-  // 全ユーザ、全候補で二重ループしてそれぞれの出欠の値がない場合には、「欠席」を設定する
+  // 閲覧ユーザと、出欠を登録したユーザを合わせた全ユーザの配列を作る
   const users = Array.from(userMap.values());
-  users.forEach((u) => {
-    candidates.forEach((c) => {
-      const map = availabilityMapMap.get(u.userId) || new Map();
-      const a = map.get(c.candidateId) || 0; // デフォルト値は 0 を使用
-      map.set(c.candidateId, a);
-      availabilityMapMap.set(u.userId, map);
-    });
-  });
 
   // コメント取得
   const comments = await prisma.comment.findMany({
@@ -166,14 +150,14 @@ app.get('/:scheduleId', async (c) => {
               <tr>
                 <th>${candidate.candidateName}</th>
                 ${users.map((user) => {
-                  const availability = availabilityMapMap
-                    .get(user.userId)
-                    .get(candidate.candidateId);
+                  // 出欠が未登録の場合は「欠席」と表示する。
+                  const availability =
+                    availabilityMapMap.get(candidate.candidateId)?.get(user.userId) ?? 0;
                   const availabilityLabels = ['欠', '？', '出'];
                   const label = availabilityLabels[availability];
                   return html`
                     <td>
-                      ${user.isSelf
+                      ${user.userId === viewerUserId
                         ? html`<button
                             data-schedule-id="${schedule.scheduleId}"
                             data-user-id="${user.userId}"
@@ -196,8 +180,10 @@ app.get('/:scheduleId', async (c) => {
               const comment = commentMap.get(user.userId);
               return html`
                 <td>
-                  <p id="${user.isSelf ? "self-comment" : ""}">${comment}</p>
-                  ${user.isSelf
+                  <p id="${user.userId === viewerUserId ? "self-comment" : ""}">
+                    ${comment}
+                  </p>
+                  ${user.userId === viewerUserId
                     ? html`
                         <button
                           data-schedule-id="${schedule.scheduleId}"
