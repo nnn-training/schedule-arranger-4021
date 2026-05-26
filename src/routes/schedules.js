@@ -57,8 +57,8 @@ app.post('/', async (c) => {
     .map((s) => s.trim())
     .filter((s) => s !== '');
   const candidates = candidateNames.map((candidateName) => ({
-    candidateName,
-    scheduleId,
+    candidateName: candidateName.slice(0, 255),
+    scheduleId: schedule.scheduleId,
   }));
   await prisma.candidate.createMany({
     data: candidates,
